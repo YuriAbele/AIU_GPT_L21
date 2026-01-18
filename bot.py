@@ -19,7 +19,7 @@ logging.basicConfig(
 load_dotenv() # Загружаем переменные окружения из файла .env
 
 # Получение токена и пароля к базе данных из .env
-telegram_token = os.getenv('API_TOKEN')
+telegram_token = os.getenv('TELEGRAM_TOKEN')
 
 # Инициализация бота и диспетчера
 bot = Bot(token=telegram_token)
