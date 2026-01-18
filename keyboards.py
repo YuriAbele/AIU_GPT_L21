@@ -1,57 +1,45 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+)
 
-
-# Список услуг
-services = [
-    "Подбор и установка новых окон",
-    "Ремонт существующих окон/замена стеклопакетов",
-    "Остекление/утепление балконов и лоджий",
-    "Остекление веранд и беседок",
-    "Демонтаж старых окон",
-    "Установка москитных сеток",
-    "Свой индивидуальный вариант"
-]
-
-
-def create_inline_keyboard(services):
-    """Создаёт inline-клавиатуру для выбора услуг."""
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=f"{idx+1}. {service}", callback_data=f"service_{idx+1}")]
-        for idx, service in enumerate(services)
-    ])
-    return keyboard
-
-
-# Функция создания Reply-клавиатуры
-async def create_reply_keyboard():
-    kb = [
-        [
-            KeyboardButton(text="Онлайн-консультант"),
-            KeyboardButton(text="Связь с менеджером компании"),
-            KeyboardButton(text="Выбрать услугу")
-        ],
-    ]
+def get_main_keyboard():
     return ReplyKeyboardMarkup(
-        keyboard=kb,
+        keyboard=[
+            [
+                KeyboardButton(text="Добавить задачу"),
+                KeyboardButton(text="Добавить сделку")
+            ],
+            [
+                KeyboardButton(text="Просмотреть задачи"),
+                KeyboardButton(text="Просмотреть сделки")
+            ],
+            [
+                KeyboardButton(text="Получить мотивацию")
+            ]
+        ],
         resize_keyboard=True
     )
 
+def get_tasks_keyboard(tasks: list):
+    builder = []
+    for index, task in enumerate(tasks):
+        # Callback data format: action:index
+        btn = InlineKeyboardButton(
+            text=f"🗑 Удалить: {task['name']}", 
+            callback_data=f"del_task:{index}"
+        )
+        builder.append([btn])
+    return InlineKeyboardMarkup(inline_keyboard=builder)
 
-def create_correction_keyboard():
-    """Создаёт inline-клавиатуру для выбора поля для исправления."""
-    buttons = [
-        [InlineKeyboardButton(text="1. Тип объекта", callback_data="edit_0")],
-        [InlineKeyboardButton(text="2. Местоположение", callback_data="edit_1")],
-        [InlineKeyboardButton(text="3. Вы (частное лицо/компания)", callback_data="edit_2")],
-        [InlineKeyboardButton(text="4. Особые пожелания", callback_data="edit_3")],
-        [InlineKeyboardButton(text="✅ Готово", callback_data="done_editing")]
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=buttons)
-
-
-def create_correction_keyboard_final():
-    keyboard = [
-        [InlineKeyboardButton(text="✅ Всё верно", callback_data="final_confirm")],
-        [InlineKeyboardButton(text="Внести исправления", callback_data="final_edit")]
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+def get_deals_keyboard(deals: list):
+    builder = []
+    for index, deal in enumerate(deals):
+        btn = InlineKeyboardButton(
+            text=f"✏️ Статус: {deal['name']}", 
+            callback_data=f"edit_deal:{index}"
+        )
+        builder.append([btn])
+    return InlineKeyboardMarkup(inline_keyboard=builder)

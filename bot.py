@@ -1,38 +1,47 @@
-import logging
 import asyncio
-from aiogram import Bot, F
-import os
+import logging
+import sys
+
+from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
-from dotenv import load_dotenv
-from aiogram import Dispatcher
+
+# ================= КОНФИГУРАЦИЯ =================
+from config import TELEGRAM_TOKEN
+
+# ================= РОУТЕР И ОБРАБОТЧИКИ =================
 import handlers
 
-# Настройка логирования
+# ================= Настройка логирования =================
 logging.basicConfig(
     # Устанавливаем уровень INFO, чтобы записывать уровни логирования: INFO, WARNING, ERROR, CRITICAL
     level=logging.INFO,
     # Формат сообщения, включающий временную метку, имя логгера, уровень логирования и само сообщение
     format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[logging.FileHandler('bot.log'),  # Запись логов в файл "bot.log" для дальнейшего анализа
-              logging.StreamHandler()])  # Вывод логов в консоль для отслеживания работы в реальном времени
+    handlers=[
+        logging.FileHandler('bot.log'),  # Запись логов в файл "bot.log" для дальнейшего анализа
+        logging.StreamHandler(stream=sys.stdout) # Вывод логов в STDOUT консоль (без параметра stream по умолчанию выводит в STDERR)
+    ]
+)  # Вывод логов в консоль для отслеживания работы в реальном времени
 
-load_dotenv() # Загружаем переменные окружения из файла .env
-
-# Получение токена и пароля к базе данных из .env
-telegram_token = os.getenv('TELEGRAM_TOKEN')
-
-# Инициализация бота и диспетчера
-bot = Bot(token=telegram_token)
-dp = Dispatcher(storage=MemoryStorage())
-# Включаем маршрутизаторы (роутеры) команд и обработчиков в объект dp для обработки входящих сообщений
-dp.include_routers(handlers.router,
-                   )
-
-# -------------------------------------------------------------
-
+# ================= ЗАПУСК БОТА =================
 async def main():
-    # Запускаем бота
+    dp = Dispatcher(storage=MemoryStorage())
+    dp.include_router(handlers.router)
+    
+    bot = Bot(
+        token=TELEGRAM_TOKEN,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+        # default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN),
+    )
+    
+    await bot.delete_webhook(drop_pending_updates=True)
+    print("Бот запущен...")
     await dp.start_polling(bot)
 
-if __name__ == '__main__':
-    asyncio.run(main())
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Бот остановлен")
